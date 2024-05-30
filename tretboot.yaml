@@ -18,8 +18,16 @@ data:
     /app/app.sh
   app.sh: |
     #!/bin/bash
+    export tretboot_autoupdate=https://raw.githubusercontent.com/Deltachaos/tretboot/main/tretboot.yaml
+    if test -f /etc/tretboot/autoupdate; then
+      export tretboot_autoupdate=$(cat /etc/tretboot/autoupdate)
+    fi
+    
     function exit {
       trap - EXIT
+      if [ $tretboot_autoupdate == http://* ]; then
+        kubectl apply -f "$tretboot_autoupdate"
+      fi;
       kubectl delete pods --namespace tretboot --selector=app=tretboot # Remove ourself
     }
     trap exit EXIT
