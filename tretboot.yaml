@@ -15,7 +15,8 @@ data:
     echo "Install dependencies..."
     apk add --no-cache git openssh helm kubectl bash > /dev/null || exit 1
     echo "Install dependencies... [DONE]"
-  watcher.sh: |
+    /app/app.sh
+  app.sh: |
     #!/bin/bash
     function exit {
       kubectl delete pods --namespace tretboot --selector=app=tretboot # Remove ourself
