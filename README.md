@@ -15,7 +15,7 @@ kubectl create configmap --namespace tretboot --from-literal="repository=https:/
 
 ## ConfigMap reference
 
-```
+```yaml
 apiVersion: v1
 kind: ConfigMap
 metadata:
