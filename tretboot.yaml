@@ -56,7 +56,9 @@ data:
         helm install --create-namespace --namespace "${namespace}" "${release}" "${chart}"
       else
         lines=$(helm diff upgrade --namespace "${namespace}" "${release}" "${chart}")
+        echo "Start diff"
         echo "$lines"
+        echo "End diff"
         if [[ $(echo $lines | wc -l) > 0 ]]; then
           echo "Upgrade existing release."
           helm upgrade --install --create-namespace --namespace "${namespace}" "${release}" "${chart}"
