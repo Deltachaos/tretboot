@@ -24,16 +24,25 @@ data:
     fi
 
     function update {
+    
       trap - EXIT
       #if [ $tretboot_autoupdate == http://* ] || [ $tretboot_autoupdate == https://* ]; then
         echo "Autoupdate 3"
         kubectl apply -f "$tretboot_autoupdate"
       #fi;
-      kubectl delete pods --namespace tretboot --selector=app=tretboot --wait=false & # Remove ourself
+      echo "Remove pods"
+      kubectl delete pods --namespace tretboot --selector=app=tretboot --wait=false # Remove ourself
+      echo "Remove pods [DONE]"
       exit 0
     }
+
+    function exittrap {
+      trap - EXIT
+      echo "Cleanup..."
+      update
+    }
     
-    trap update EXIT
+    trap exittrap EXIT
     test -f "/etc/tretboot/repository" || (echo "Please set git url in key repository in configmap tretboot-config" && exit 1)
     
     export tretboot_interval=60
