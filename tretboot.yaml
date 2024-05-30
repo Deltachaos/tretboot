@@ -55,15 +55,19 @@ data:
         echo "Initial install."
         helm install --create-namespace --namespace "${namespace}" "${release}" "${chart}"
       else
-        lines=$(helm diff upgrade --namespace "${namespace}" "${release}" "${chart}")
-        echo "Start diff"
-        echo "$lines"
-        echo "End diff"
-        if [[ $(echo $lines | wc -l) > 0 ]]; then
-          echo "Upgrade existing release."
-          helm upgrade --install --create-namespace --namespace "${namespace}" "${release}" "${chart}"
+        if [ "${update}" -eq "1" ]; then
+          lines=$(helm diff upgrade --namespace "${namespace}" "${release}" "${chart}")
+          echo "Start diff"
+          echo "$lines"
+          echo "End diff"
+          if [[ $(echo $lines | wc -l) > 0 ]]; then
+            echo "Upgrade existing release."
+            helm upgrade --install --create-namespace --namespace "${namespace}" "${release}" "${chart}"
+          else
+            echo "No changes. Skip."
+          fi
         else
-          echo "No changes. Skip."
+          echo "Update disabled. Skip."
         fi
       fi
     }
@@ -114,6 +118,7 @@ data:
         if [ -d "$dir" ]; then
           name=$(basename $dir)
           release=${name}
+          update=1
           echo "Check for $dir/fleet.yaml"
           if [ -e "$dir/fleet.yaml" ]; then
             echo "Found fleet bundle $name in $dir"
@@ -124,6 +129,9 @@ data:
               chart=$(yj "$dir/fleet.yaml" | jq --raw-output '.helm.chart')
               if yj "$dir/fleet.yaml" | jq --raw-output '.helm.releaseName'; then
                 release=$(yj "$dir/fleet.yaml" | jq --raw-output '.helm.releaseName')
+              fi
+              if yj "$dir/fleet.yaml" | jq --raw-output '.helm.disableUpdate'; then
+                update=$(yj "$dir/fleet.yaml" | jq --raw-output 'if .helm.disableUpdate then 0 else 1 end')
               fi
               if ! yj "$dir/fleet.yaml" | jq --raw-output '.helm.repo'; then
                 echo "Chart without repository. Assume local chart";
