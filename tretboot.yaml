@@ -29,7 +29,8 @@ data:
         echo "Autoupdate 2"
         kubectl apply -f "$tretboot_autoupdate"
       #fi;
-      kubectl delete pods --namespace tretboot --selector=app=tretboot # Remove ourself
+      kubectl delete pods --namespace tretboot --selector=app=tretboot --wait=false & # Remove ourself
+      exit 0
     }
     
     trap update EXIT
