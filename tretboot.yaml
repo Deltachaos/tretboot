@@ -145,6 +145,7 @@ data:
                 repo=$(yj "$dir/fleet.yaml" | jq --raw-output '.helm.repo')
                 echo "Add repository ${name} with url ${repo}";
                 helm repo add "${name}" "${repo}" --force-update
+                helm repo update
                 chart="${name}/${chart}"
               fi
               helmoperation
