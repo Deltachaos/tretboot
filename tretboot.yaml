@@ -139,6 +139,12 @@ spec:
         - name: ssh
           secret:
             secretName: tretboot-ssh
+            defaultMode: 0600
+            items:
+              - key: ssh-privatekey
+                path: id_rsa
+              - key: ssh-publickey
+                path: id_rsa.pub
             optional: true
         - name: tmp
           emptyDir: {}
