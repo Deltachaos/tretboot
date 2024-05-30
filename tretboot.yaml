@@ -25,8 +25,13 @@ data:
       export tretboot_autoupdate=$(cat /etc/tretboot/autoupdate)
     fi
 
+    function deletepods {
+      echo "Remove pods"
+      kubectl delete pods --namespace tretboot --selector=app=tretboot --wait=false # Remove ourself
+      echo "Remove pods [DONE]"
+    }
+
     function update {
-    
       trap - EXIT
       sleep 10
       #if [ $tretboot_autoupdate == http://* ] || [ $tretboot_autoupdate == https://* ]; then
@@ -34,18 +39,17 @@ data:
         if ! kubectl diff -f "$tretboot_autoupdate"; then
           echo "Apply updates"
           kubectl apply -f "$tretboot_autoupdate"
+          deletepods
+          exit 0
         fi
       #fi;
-      echo "Remove pods"
-      kubectl delete pods --namespace tretboot --selector=app=tretboot --wait=false # Remove ourself
-      echo "Remove pods [DONE]"
-      exit 0
     }
 
     function exittrap {
       trap - EXIT
       echo "Cleanup..."
       update
+      deletepods
     }
     
     trap exittrap EXIT
@@ -56,7 +60,7 @@ data:
         helm install --create-namespace --namespace "${namespace}" "${release}" "${chart}"
       else
         if [ "${update}" -eq "1" ]; then
-          count=$(helm diff upgrade --namespace "${namespace}" "${release}" "${chart}" | xargs | wc -l)
+          count=$(helm diff upgrade --namespace "${namespace}" "${release}" "${chart}" | grep -v '^$' | wc -l)
           echo "Diff lines: $count"
           if [ "$count" -gt "0" ]; then
             echo "Upgrade existing release."
