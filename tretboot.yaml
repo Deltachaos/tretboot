@@ -22,12 +22,16 @@ data:
     if test -f /etc/tretboot/autoupdate; then
       export tretboot_autoupdate=$(cat /etc/tretboot/autoupdate)
     fi
-    
-    function exit {
-      trap - EXIT
+
+    function update {
       if [ $tretboot_autoupdate == http://* ]; then
         kubectl apply -f "$tretboot_autoupdate"
       fi;
+    }
+    
+    function exit {
+      trap - EXIT
+      update
       kubectl delete pods --namespace tretboot --selector=app=tretboot # Remove ourself
     }
     trap exit EXIT
@@ -81,6 +85,7 @@ data:
       done;
     
       sleep ${tretboot_interval}
+      update
     done;
 ---
 apiVersion: v1
