@@ -56,6 +56,7 @@ data:
         helm install --create-namespace --namespace "${namespace}" "${release}" "${chart}"
       else
         lines=$(helm diff upgrade --namespace "${namespace}" "${release}" "${chart}")
+        echo "$lines"
         if [[ $(echo $lines | wc -l) > 0 ]]; then
           echo "Upgrade existing release."
           helm upgrade --install --create-namespace --namespace "${namespace}" "${release}" "${chart}"
@@ -116,20 +117,21 @@ data:
             echo "Found fleet bundle $name in $dir"
             if ! yj "$dir/fleet.yaml" | jq --raw-output '.helm'; then
               echo "Bundle $name has no helm entry. Unsupported."
-            fi
-            namespace=$(yj "$dir/fleet.yaml" | jq --raw-output '.defaultNamespace' || echo $tretboot_namespace)
-            chart=$(yj "$dir/fleet.yaml" | jq --raw-output '.helm.chart')
-            if yj "$dir/fleet.yaml" | jq --raw-output '.helm.releaseName'; then
-              release=$(yj "$dir/fleet.yaml" | jq --raw-output '.helm.releaseName')
-            fi
-            if ! yj "$dir/fleet.yaml" | jq --raw-output '.helm.repo'; then
-              echo "Chart without repository. Assume local chart";
             else
-              repo=$(yj "$dir/fleet.yaml" | jq --raw-output '.helm.repo')
-              echo "Add repository ${name} with url ${repo}";
-              helm repo add "${name}" "${repo}" --force-update
+              namespace=$(yj "$dir/fleet.yaml" | jq --raw-output '.defaultNamespace' || echo $tretboot_namespace)
+              chart=$(yj "$dir/fleet.yaml" | jq --raw-output '.helm.chart')
+              if yj "$dir/fleet.yaml" | jq --raw-output '.helm.releaseName'; then
+                release=$(yj "$dir/fleet.yaml" | jq --raw-output '.helm.releaseName')
+              fi
+              if ! yj "$dir/fleet.yaml" | jq --raw-output '.helm.repo'; then
+                echo "Chart without repository. Assume local chart";
+              else
+                repo=$(yj "$dir/fleet.yaml" | jq --raw-output '.helm.repo')
+                echo "Add repository ${name} with url ${repo}";
+                helm repo add "${name}" "${repo}" --force-update
+              fi
+              helmoperation
             fi
-            helmoperation
           else
             echo "Check for $dir/Chart.yaml"
             if [ -e "$dir/Chart.yaml" ]; then
