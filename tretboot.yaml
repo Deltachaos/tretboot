@@ -93,7 +93,7 @@ data:
           echo "Check for $dir/fleet.yaml"
           if [ -e "$dir/fleet.yaml" ]; then
             echo "Found fleet bundle $name in $dir"
-            yq eval '.defaultNamespace' "$dir/fleet.yaml"
+            jq eval '.defaultNamespace' "$dir/fleet.yaml"
           else
             echo "Check for $dir/Chart.yaml"
             if [ -e "$dir/Chart.yaml" ]; then
