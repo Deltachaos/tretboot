@@ -61,10 +61,12 @@ data:
           name=$(basename $dir)
           if [ -e "$dir/fleet.yaml" ]; then
             echo "Found fleet bundle $name in $dir"
-          else if [ -e "$dir/Cart.yaml" ]; then
-            echo "Found helm chart $name in $dir"
-            namespace=$tretboot_namespace
-            helm upgrade --install --namespace ${namespace} --create-namespace "${name}" "./${dir}"
+          else
+            if [ -e "$dir/Cart.yaml" ]; then
+              echo "Found helm chart $name in $dir"
+              namespace=$tretboot_namespace
+              helm upgrade --install --namespace ${namespace} --create-namespace "${name}" "./${dir}"
+            fi
           fi
         fi;
       done;
