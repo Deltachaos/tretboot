@@ -58,6 +58,7 @@ data:
       if ! helm status --namespace "${namespace}" "${release}"; then
         echo "Initial install."
         echo helm install --create-namespace --namespace "${namespace}" -f /tmp/${name}.json "${release}" "${chart}"
+        helm install --create-namespace --namespace "${namespace}" -f /tmp/${name}.json "${release}" "${chart}"
       else
         if [ "${update}" -eq "1" ]; then
           count=$(helm diff upgrade --namespace "${namespace}" "${release}" -f /tmp/${name}.json "${chart}" | grep -v '^$' | wc -l)
@@ -128,18 +129,18 @@ data:
             if ! yj "$dir/fleet.yaml" | jq --raw-output '.helm'; then
               echo "Bundle $name has no helm entry. Unsupported."
             else
-              namespace=$(yj "$dir/fleet.yaml" | jq --raw-output '.defaultNamespace' || echo $tretboot_namespace)
+              namespace=$(yj "$dir/fleet.yaml" | jq -e --raw-output '.defaultNamespace' || echo $tretboot_namespace)
               chart=$(yj "$dir/fleet.yaml" | jq --raw-output '.helm.chart')
-              if yj "$dir/fleet.yaml" | jq --raw-output '.helm.releaseName'; then
+              if yj "$dir/fleet.yaml" | jq -e 'has(.helm.releaseName)'; then
                 release=$(yj "$dir/fleet.yaml" | jq --raw-output '.helm.releaseName')
               fi
-              if yj "$dir/fleet.yaml" | jq --raw-output '.helm.disableUpdate'; then
+              if yj "$dir/fleet.yaml" | jq -e 'has(.helm.disableUpdate)'; then
                 update=$(yj "$dir/fleet.yaml" | jq --raw-output 'if .helm.disableUpdate then 0 else 1 end')
               fi
-              if yj "$dir/fleet.yaml" | jq '.helm.values'; then
+              if yj "$dir/fleet.yaml" | jq -e 'has(.helm.values)'; then
                 yj "$dir/fleet.yaml" | jq '.helm.values' > /tmp/${name}.json
               fi
-              if ! yj "$dir/fleet.yaml" | jq --raw-output '.helm.repo'; then
+              if ! yj "$dir/fleet.yaml" | jq -e 'has(.helm.repo)'; then
                 echo "Chart without repository. Assume local chart";
               else
                 repo=$(yj "$dir/fleet.yaml" | jq --raw-output '.helm.repo')
