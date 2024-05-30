@@ -126,7 +126,7 @@ data:
               echo "Add repository ${name} with url ${repo}";
               helm repo add "${name}" "${repo}" --force-update
             fi
-            helm upgrade --install --create-namespace --namespace "${namespace}" "${release}" "${chart}"
+            helmoperation
           else
             echo "Check for $dir/Chart.yaml"
             if [ -e "$dir/Chart.yaml" ]; then
@@ -134,7 +134,7 @@ data:
               namespace=$tretboot_namespace
               chart="./${dir}"
               release=${name}
-              helm upgrade --install --create-namespace --namespace "${namespace}" "${release}" "${chart}"
+              helmoperation
             fi
           fi
         fi;
