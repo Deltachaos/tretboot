@@ -10,7 +10,9 @@ To run `tretboot` you just need apply the `tretboot.yaml` to your cluster and cr
 
 ```
 kubectl apply -f https://raw.githubusercontent.com/Deltachaos/tretboot/main/tretboot.yaml
-kubectl create configmap --namespace tretboot --from-literal="repository=https://user:password@example.com/somerepo.git"
+kubectl create configmap tretboot-config \
+  --namespace tretboot \
+  --from-literal="repository=https://user:password@example.com/somerepo.git"
 ```
 
 ## ConfigMap reference
