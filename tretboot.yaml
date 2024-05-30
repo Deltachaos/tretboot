@@ -13,7 +13,7 @@ data:
     #!/bin/sh
     
     echo "Install dependencies..."
-    apk add --no-cache git openssh helm jq kubectl bash > /dev/null || exit 1
+    apk add --no-cache git openssh helm yq jq kubectl bash > /dev/null || exit 1
     echo "Install dependencies... [DONE]"
     /app/app.sh
   app.sh: |
