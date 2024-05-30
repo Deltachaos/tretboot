@@ -69,6 +69,7 @@ helm:
   chart: ./chart # Or a chart name
   repo: https://charts.rancher.io # Only required if chart is not a local chart
   version: 0.1.0 # Only required if chart is not a local chart
+  disableUpdate: true # If chart is already installed, it will not get updated even with changes
   values:
    any-custom: value
 ```
