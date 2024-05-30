@@ -19,6 +19,7 @@ data:
   app.sh: |
     #!/bin/bash
     function exit {
+      trap - EXIT
       kubectl delete pods --namespace tretboot --selector=app=tretboot # Remove ourself
     }
     trap exit EXIT
