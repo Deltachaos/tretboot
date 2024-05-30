@@ -57,7 +57,7 @@ data:
     function helmoperation {
       if ! helm status --namespace "${namespace}" "${release}"; then
         echo "Initial install."
-        helm install --create-namespace --namespace "${namespace}" -f /tmp/${name}.json "${release}" "${chart}"
+        echo helm install --create-namespace --namespace "${namespace}" -f /tmp/${name}.json "${release}" "${chart}"
       else
         if [ "${update}" -eq "1" ]; then
           count=$(helm diff upgrade --namespace "${namespace}" "${release}" -f /tmp/${name}.json "${chart}" | grep -v '^$' | wc -l)
