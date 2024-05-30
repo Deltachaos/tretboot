@@ -60,9 +60,11 @@ data:
       echo "Release: ${release}"
       echo "Chart: ${chart}"
 
+      local helmsuccess=0
       if ! helm status --namespace "${namespace}" "${release}"; then
         echo "Initial install."
         helm install --create-namespace --namespace "${namespace}" -f /tmp/${name}.json "${release}" "${chart}"
+        helmsuccess=$?
       else
         if [ "${update}" -eq "1" ]; then
           count=$(helm diff upgrade --namespace "${namespace}" "${release}" -f /tmp/${name}.json "${chart}" | grep -v '^$' | wc -l)
@@ -70,6 +72,7 @@ data:
           if [ "$count" -gt "0" ]; then
             echo "Upgrade existing release."
             helm upgrade --install --create-namespace --namespace "${namespace}" -f /tmp/${name}.json "${release}" "${chart}"
+            helmsuccess=$?
           else
             echo "No changes. Skip."
           fi
@@ -77,6 +80,8 @@ data:
           echo "Update disabled. Skip."
         fi
       fi
+
+      return $helmsuccess
     }
     
     test -f "/etc/tretboot/repository" || (echo "Please set git url in key repository in configmap tretboot-config" && exit 1)
@@ -119,6 +124,8 @@ data:
       if [ -f "/etc/tretboot/hook-loop" ]; then
         source /etc/tretboot/hook-loop
       fi;
+
+      helmsuccess=0
       
       for dir in *; do
         cd "/tmp/repository/${tretboot_path}" || exit 1
@@ -158,6 +165,7 @@ data:
                 cd "${name}"
               fi
               helmoperation
+              helmsuccess=$?
             else
               echo "Bundle $name has no helm entry. Unsupported."
             fi
@@ -169,14 +177,20 @@ data:
               chart="./${dir}"
               helm dependency update "${chart}"
               helmoperation
+              helmsuccess=$?
             fi
           fi
         fi;
       done;
 
-      echo "Sleep for ${tretboot_interval} seconds"
-      sleep ${tretboot_interval}
-      update
+      if [ "$helmsuccess" -gt "0" ]; then
+        echo "Not all ressources applied. Sleep for 10 seconds and retry."
+        sleep 10
+      else
+        echo "Sleep for ${tretboot_interval} seconds"
+        sleep ${tretboot_interval}
+        update
+      fi
     done;
 ---
 apiVersion: v1
