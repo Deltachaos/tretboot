@@ -15,6 +15,12 @@ kubectl create configmap tretboot-config \
   --from-literal="repository=https://user:password@example.com/somerepo.git"
 ```
 
+# Show logs
+
+```
+kubectl logs -f --namespace tretboot --selector=app=tretboot
+```
+
 ## ConfigMap reference
 
 ```yaml
