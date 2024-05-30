@@ -1,0 +1,125 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: tretboot
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tretboot-app
+  namespace: tretboot
+data:
+  docker-entrypoint.sh: |
+    #!/bin/sh
+    test -f "/etc/tretboot/repository" || (echo "Please set git url in key repository in configmap tretboot-config" && exit 1)
+    
+    export tretboot_interval=60
+    export tretboot_namespace=default
+    export tretboot_path=""
+    
+    for var in /etc/tretboot/*; do
+      export tretboot_${var}=$(cat /etc/tretboot/$var) 
+    done;
+
+    echo "Install dependencies..."
+    apk add --no-cache git openssh helm > /dev/null || exit 1
+    echo "Install dependencies... [DONE]"
+    cd /tmp || exit 1
+    
+    if [ -f "/etc/tretboot/hook-before-clone" ]; then
+      source /etc/tretboot/hook-before-clone
+    fi;
+    
+    export GIT_SSH_COMMAND="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
+    git clone "${tretboot_repository}" repository || exit 1
+    
+    while true; do
+      cd "/tmp/repository" || exit 1
+      echo "Update repository..."
+      git fetch
+      git reset origin/$(git rev-parse --abbrev-ref HEAD) --hard
+      echo "Update repository... [DONE]"
+
+      cd "/tmp/repository/${tretboot_path}" || exit 1
+    
+      if [ -f "/etc/tretboot/hook-loop" ]; then
+        source /etc/tretboot/hook-loop
+      fi;
+
+      for dir in *; do
+        if [ -d "$dir" ]; then
+          name=$(basename $dir)
+          if [ -e "$dir/fleet.yaml" ]; then
+            echo "Found fleet bundle $name in $dir"
+          else if [ -e "$dir/Cart.yaml" ]; then
+            echo "Found helm chart $name in $dir"
+            namespace=$tretboot_namespace
+            helm upgrade --install --namespace ${namespace} --create-namespace "${name}" "./${dir}"
+          fi
+        fi;
+      done;
+    
+      sleep ${tretboot_interval}
+    done;
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: tretboot
+  namespace: tretboot
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: tretboot
+subjects:
+  - kind: ServiceAccount
+    name: tretboot
+    namespace: tretboot
+roleRef:
+  kind: ClusterRole
+  name: cluster-admin
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tretboot
+  namespace: tretboot
+  labels:
+    app: tretboot
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tretboot
+  template:
+    metadata:
+      labels:
+        app: tretboot
+    spec:
+      serviceAccountName: tretboot
+      restartPolicy: Always
+      containers:
+        - name: runner
+          image: alpine:latest
+          command: ["/bin/sh"]
+          args:
+            - "/app/docker-entrypoint.sh"
+          volumeMounts:
+            - name: etc
+              mountPath: /etc/tretboot
+            - name: app
+              mountPath: /app
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: etc
+          configMap:
+            name: tretboot-config
+        - name: app
+          configMap:
+            name: tretboot-app
+            defaultMode: 0777
+        - name: tmp
+          emptyDir: {}
