@@ -30,8 +30,11 @@ data:
       trap - EXIT
       sleep 10
       #if [ $tretboot_autoupdate == http://* ] || [ $tretboot_autoupdate == https://* ]; then
-        echo "Autoupdate"
-        kubectl apply -f "$tretboot_autoupdate"
+        echo "Check for updates"
+        if ! kubectl diff -f "$tretboot_autoupdate"; then
+          echo "Apply updates"
+          kubectl apply -f "$tretboot_autoupdate"
+        fi
       #fi;
       echo "Remove pods"
       kubectl delete pods --namespace tretboot --selector=app=tretboot --wait=false # Remove ourself
