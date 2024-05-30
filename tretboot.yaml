@@ -26,11 +26,11 @@ data:
     function update {
     
       trap - EXIT
+      sleep 10
       #if [ $tretboot_autoupdate == http://* ] || [ $tretboot_autoupdate == https://* ]; then
-        echo "Autoupdate 5"
+        echo "Autoupdate 6"
         kubectl apply -f "$tretboot_autoupdate"
       #fi;
-      sleep 10
       echo "Remove pods"
       kubectl delete pods --namespace tretboot --selector=app=tretboot --wait=false # Remove ourself
       echo "Remove pods [DONE]"
@@ -81,7 +81,7 @@ data:
       if [ -f "/etc/tretboot/hook-loop" ]; then
         source /etc/tretboot/hook-loop
       fi;
-
+      ls -l /tmp/repository/
       for dir in *; do
         if [ -d "$dir" ]; then
           name=$(basename $dir)
