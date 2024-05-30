@@ -90,16 +90,34 @@ data:
         echo "Check $dir"
         if [ -d "$dir" ]; then
           name=$(basename $dir)
+          release=${name}
           echo "Check for $dir/fleet.yaml"
           if [ -e "$dir/fleet.yaml" ]; then
             echo "Found fleet bundle $name in $dir"
-            yj "$dir/fleet.yaml" | jq '.defaultNamespace' 
+            if ! yj "$dir/fleet.yaml" | jq --raw-output '.helm'; then
+              echo "Bundle $name has no helm entry. Unsupported."
+            fi
+            namespace=$(yj "$dir/fleet.yaml" | jq --raw-output '.defaultNamespace' || echo $tretboot_namespace)
+            chart=$(yj "$dir/fleet.yaml" | jq --raw-output '.helm.chart')
+            if yj "$dir/fleet.yaml" | jq --raw-output '.helm.releaseName'; then
+              release=$(yj "$dir/fleet.yaml" | jq --raw-output '.helm.releaseName')
+            fi
+            if ! yj "$dir/fleet.yaml" | jq --raw-output '.helm.repo'; then
+              echo "Chart without repository. Assume local chart";
+            else
+              repo=$(yj "$dir/fleet.yaml" | jq --raw-output '.helm.repo')
+              echo "Add repository ${name} with url ${repo}";
+              helm repo add "${name}" "${repo}" --force-update
+            fi
+            helm upgrade --install --create-namespace --namespace "${namespace}" "${release}" "${chart}"
           else
             echo "Check for $dir/Chart.yaml"
             if [ -e "$dir/Chart.yaml" ]; then
               echo "Found helm chart $name in $dir"
               namespace=$tretboot_namespace
-              helm upgrade --install --namespace ${namespace} --create-namespace "${name}" "./${dir}"
+              chart="./${dir}"
+              release=${name}
+              helm upgrade --install --create-namespace --namespace "${namespace}" "${release}" "${chart}"
             fi
           fi
         fi;
