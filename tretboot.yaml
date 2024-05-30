@@ -52,6 +52,10 @@ data:
     fi;
     
     cd /tmp || exit 1
+    if [ -d /tmp/repository ]; then
+      echo "Clean up old directory"
+      rm -Rf /tmp/repository
+    fi
     export GIT_SSH_COMMAND="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
     git clone "${tretboot_repository}" repository || exit 1
     
