@@ -24,7 +24,7 @@ data:
     fi
 
     function update {
-      if [ $tretboot_autoupdate == http://* ]; then
+      if [ $tretboot_autoupdate == http://* ] || [ $tretboot_autoupdate == https://* ]; then
         kubectl apply -f "$tretboot_autoupdate"
       fi;
     }
