@@ -119,8 +119,13 @@ spec:
           volumeMounts:
             - name: etc
               mountPath: /etc/tretboot
+              readOnly: true
             - name: app
               mountPath: /app
+              readOnly: true
+            - name: ssh
+              mountPath: /root/.ssh
+              readOnly: true
             - name: tmp
               mountPath: /tmp
       volumes:
@@ -131,5 +136,9 @@ spec:
           configMap:
             name: tretboot-app
             defaultMode: 0777
+        - name: ssh
+          secret:
+            secretName: tretboot-ssh
+            optional: true
         - name: tmp
           emptyDir: {}
