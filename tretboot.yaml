@@ -16,20 +16,23 @@ data:
     export tretboot_interval=60
     export tretboot_namespace=default
     export tretboot_path=""
-    
-    for var in /etc/tretboot/*; do
-      export tretboot_${var}=$(cat /etc/tretboot/$var) 
+
+    cd /etc/tretboot/ || exit 1
+    for var in *; do
+      if [ -f "$var" ]; then
+        export tretboot_${var}=$(cat /etc/tretboot/$var) 
+      fi
     done;
 
     echo "Install dependencies..."
     apk add --no-cache git openssh helm > /dev/null || exit 1
     echo "Install dependencies... [DONE]"
-    cd /tmp || exit 1
     
     if [ -f "/etc/tretboot/hook-before-clone" ]; then
       source /etc/tretboot/hook-before-clone
     fi;
     
+    cd /tmp || exit 1
     export GIT_SSH_COMMAND="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
     git clone "${tretboot_repository}" repository || exit 1
     
