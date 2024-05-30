@@ -156,6 +156,7 @@ data:
               echo "Found helm chart $name in $dir"
               namespace=$tretboot_namespace
               chart="./${dir}"
+              helm dependency update "${chart}"
               helmoperation
             fi
           fi
