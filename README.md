@@ -15,6 +15,17 @@ kubectl create configmap tretboot-config \
   --from-literal="repository=https://user:password@example.com/somerepo.git"
 ```
 
+## How to use with ssh key?
+
+If you need a ssh key to access your repository use the following command:
+
+```
+kubectl create secret generic tretboot-ssh \
+   --namespace tretboot \
+   --from-file=ssh-privatekey=id_rsa \
+   --from-file=ssh-publickey=id_rsa.pub
+```
+
 # Show logs
 
 ```
