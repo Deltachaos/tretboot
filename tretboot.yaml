@@ -34,7 +34,7 @@ data:
     function update {
       trap - EXIT
       sleep 10
-      #if [ $tretboot_autoupdate == http://* ] || [ $tretboot_autoupdate == https://* ]; then
+      if ! [ -z "$tretboot_autoupdate" ]; then
         echo "Check for updates"
         if ! kubectl diff -f "$tretboot_autoupdate"; then
           echo "Apply updates"
@@ -42,7 +42,7 @@ data:
           deletepods
           exit 0
         fi
-      #fi;
+      fi;
     }
 
     function exittrap {
