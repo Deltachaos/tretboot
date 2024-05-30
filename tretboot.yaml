@@ -103,7 +103,8 @@ data:
           fi
         fi;
       done;
-    
+
+      echo "Sleep for ${tretboot_interval} seconds"
       sleep ${tretboot_interval}
       update
     done;
