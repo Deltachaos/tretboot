@@ -42,6 +42,7 @@ metadata:
   namespace: tretboot
 data:
   repository: "https://user:password@example.com/somerepo.git" # URL to the git repository
+  autoupdate: "https://raw.githubusercontent.com/Deltachaos/tretboot/main/tretboot.yaml" # URL for auto update. Empty string for disable.
   path: "some/path" # Relative path in the git repository to look for your helm charts and fleet bundles
   interval: "60" # Sleep interval before git fetch and upgrade of helm charts
   namespace: "default" # The kubernetes namespace, tretboot installs helmcharts into
