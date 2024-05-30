@@ -18,6 +18,7 @@ data:
     /app/app.sh
   app.sh: |
     #!/bin/bash
+    echo "Running tretboot version $(md5sum /app/app.sh)"
     export tretboot_autoupdate=https://raw.githubusercontent.com/Deltachaos/tretboot/main/tretboot.yaml
     if test -f /etc/tretboot/autoupdate; then
       export tretboot_autoupdate=$(cat /etc/tretboot/autoupdate)
@@ -28,7 +29,7 @@ data:
       trap - EXIT
       sleep 10
       #if [ $tretboot_autoupdate == http://* ] || [ $tretboot_autoupdate == https://* ]; then
-        echo "Autoupdate 6"
+        echo "Autoupdate"
         kubectl apply -f "$tretboot_autoupdate"
       #fi;
       echo "Remove pods"
