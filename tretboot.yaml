@@ -27,9 +27,10 @@ data:
     
       trap - EXIT
       #if [ $tretboot_autoupdate == http://* ] || [ $tretboot_autoupdate == https://* ]; then
-        echo "Autoupdate 4"
+        echo "Autoupdate 5"
         kubectl apply -f "$tretboot_autoupdate"
       #fi;
+      sleep 10
       echo "Remove pods"
       kubectl delete pods --namespace tretboot --selector=app=tretboot --wait=false # Remove ourself
       echo "Remove pods [DONE]"
