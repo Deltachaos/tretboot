@@ -14,7 +14,7 @@ data:
     
     echo "Install dependencies..."
     apk add --no-cache git openssh helm yj jq kubectl bash > /dev/null || exit 1
-    helm plugin install https://github.com/databus23/helm-diff
+    helm plugin install https://github.com/databus23/helm-diff > /dev/null || exit 1
     echo "Install dependencies... [DONE]"
     /app/app.sh
   app.sh: |
