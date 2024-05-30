@@ -11,6 +11,16 @@ metadata:
 data:
   docker-entrypoint.sh: |
     #!/bin/sh
+    
+    echo "Install dependencies..."
+    apk add --no-cache git openssh helm kubectl bash > /dev/null || exit 1
+    echo "Install dependencies... [DONE]"
+  watcher.sh: |
+    #!/bin/bash
+    function exit {
+      kubectl delete pods --namespace tretboot --selector=app=tretboot # Remove ourself
+    }
+    trap exit EXIT
     test -f "/etc/tretboot/repository" || (echo "Please set git url in key repository in configmap tretboot-config" && exit 1)
     
     export tretboot_interval=60
@@ -23,10 +33,6 @@ data:
         export tretboot_${var}=$(cat /etc/tretboot/$var) 
       fi
     done;
-
-    echo "Install dependencies..."
-    apk add --no-cache git openssh helm > /dev/null || exit 1
-    echo "Install dependencies... [DONE]"
     
     if [ -f "/etc/tretboot/hook-before-clone" ]; then
       source /etc/tretboot/hook-before-clone
