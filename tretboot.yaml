@@ -14,6 +14,7 @@ data:
     
     echo "Install dependencies..."
     apk add --no-cache git openssh helm yj jq kubectl bash > /dev/null || exit 1
+    helm plugin install https://github.com/databus23/helm-diff
     echo "Install dependencies... [DONE]"
     /app/app.sh
   app.sh: |
@@ -45,6 +46,22 @@ data:
     }
     
     trap exittrap EXIT
+
+    function helmoperation {
+      if ! helm status --namespace "${namespace}" "${release}"; then
+        echo "Initial install."
+        helm install --create-namespace --namespace "${namespace}" "${release}" "${chart}"
+      else
+        lines=$(helm diff upgrade --namespace "${namespace}" "${release}" "${chart})
+        if [[ $(echo $lines | wc -l) > 0 ]]; then
+          echo "Upgrade existing release."
+          helm upgrade --install --create-namespace --namespace "${namespace}" "${release}" "${chart}"
+        else
+          echo "No changes. Skip."
+        fi
+      fi
+    }
+    
     test -f "/etc/tretboot/repository" || (echo "Please set git url in key repository in configmap tretboot-config" && exit 1)
     
     export tretboot_interval=60
