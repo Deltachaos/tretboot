@@ -76,12 +76,15 @@ data:
       git reset origin/$(git rev-parse --abbrev-ref HEAD) --hard
       echo "Update repository... [DONE]"
 
+      echo "List contents of repository:"
+      ls -l /tmp/repository/
+
       cd "/tmp/repository/${tretboot_path}" || exit 1
     
       if [ -f "/etc/tretboot/hook-loop" ]; then
         source /etc/tretboot/hook-loop
       fi;
-      ls -l /tmp/repository/
+      
       for dir in *; do
         if [ -d "$dir" ]; then
           name=$(basename $dir)
