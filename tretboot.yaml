@@ -62,7 +62,6 @@ data:
 
       if ! helm status --namespace "${namespace}" "${release}"; then
         echo "Initial install."
-        echo helm install --create-namespace --namespace "${namespace}" -f /tmp/${name}.json "${release}" "${chart}"
         helm install --create-namespace --namespace "${namespace}" -f /tmp/${name}.json "${release}" "${chart}"
       else
         if [ "${update}" -eq "1" ]; then
