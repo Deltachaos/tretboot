@@ -59,19 +59,27 @@ data:
       echo "Namespace: ${namespace}"
       echo "Release: ${release}"
       echo "Chart: ${chart}"
+      echo "Values: "
+      cat /tmp/${name}.json
+      extravalues=""
+      if [ -e /etc/tretboot/${release}.yaml ]; then
+        echo "Tretboot Values: "
+        cat /etc/tretboot/${release}.yaml
+        extravalues="-f /etc/tretboot/${release}.yaml"
+      fi
 
       local helmsuccess=0
       if ! helm status --namespace "${namespace}" "${release}"; then
         echo "Initial install."
-        helm install --create-namespace --namespace "${namespace}" -f /tmp/${name}.json "${release}" "${chart}"
+        helm install --create-namespace --namespace "${namespace}" -f /tmp/${name}.json $extravalues "${release}" "${chart}"
         helmsuccess=$?
       else
         if [ "${update}" -eq "1" ]; then
-          count=$(helm diff upgrade --namespace "${namespace}" "${release}" -f /tmp/${name}.json "${chart}" | grep -v '^$' | wc -l)
+          count=$(helm diff upgrade --namespace "${namespace}" "${release}" -f /tmp/${name}.json $extravalues "${chart}" | grep -v '^$' | wc -l)
           echo "Diff lines: $count"
           if [ "$count" -gt "0" ]; then
             echo "Upgrade existing release."
-            helm upgrade --install --create-namespace --namespace "${namespace}" -f /tmp/${name}.json "${release}" "${chart}"
+            helm upgrade --install --create-namespace --namespace "${namespace}" -f /tmp/${name}.json $extravalues "${release}" "${chart}"
             helmsuccess=$?
           else
             echo "No changes. Skip."
@@ -120,6 +128,9 @@ data:
       ls -l /tmp/repository/
 
       cd "/tmp/repository/${tretboot_path}" || exit 1
+
+      echo "List contents of tretboot path:"
+      ls -l
     
       if [ -f "/etc/tretboot/hook-loop" ]; then
         source /etc/tretboot/hook-loop
