@@ -52,6 +52,11 @@ data:
   # Custom shell script executed in the reconciliation loop
   hook-loop: |
     echo "Hello World"
+  helmreleasename.yaml: |
+    override:
+      any:
+        helm:
+           value: true
 ```
 
 ### Supported resources
